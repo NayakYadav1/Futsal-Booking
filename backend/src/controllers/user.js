@@ -74,7 +74,11 @@ async function login(req, res) {
 
 async function listUsers(req, res){
   try{
-    const users = await User.find().select('fullname email phone role isVerified createdAt');
+    // by default exclude admin users from the listing in a professional setup
+    const includeAdmins = req.query.includeAdmins === 'true';
+    const query = includeAdmins ? {} : { role: { $ne: 'admin' } };
+
+    const users = await User.find(query).select('fullname email phone role isVerified createdAt');
     res.json({ users });
   }catch(err){
     console.error(err);

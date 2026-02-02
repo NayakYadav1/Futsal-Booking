@@ -91,6 +91,40 @@ exports.cancelByUser = async (req, res) => {
   }
 };
 
+// Admin: delete/cancel any booking (admin only)
+exports.adminDeleteBooking = async (req, res) => {
+  try{
+    const slotId = req.params.slotId;
+    const slot = await Slot.findById(slotId);
+    if (!slot) return res.status(404).json({ error: 'Slot not found' });
+
+    // reset slot to available
+    slot.status = 'available';
+    slot.reservedBy = null;
+    slot.reservedUntil = null;
+    slot.pendingBy = null;
+    await slot.save();
+
+    res.json({ message: 'Booking deleted by admin', slot });
+  }catch(err){
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// User: get my bookings (reserved/pending) with futsal details
+exports.getUserBookings = async (req, res) => {
+  try{
+    const userId = req.user.id;
+    const slots = await Slot.find({ $or: [ { reservedBy: userId }, { pendingBy: userId } ] })
+      .populate('futsal', 'name location')
+      .sort('start');
+
+    res.json({ slots });
+  }catch(err){
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Utility: Run a quick release of expired reserves (admin or scheduled)
 exports.releaseExpired = async (req, res) => {
   try{

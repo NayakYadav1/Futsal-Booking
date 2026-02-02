@@ -23,7 +23,8 @@ exports.createFutsal = async (req, res) => {
   try{
     const { name, photos, contact, location, address, openingHour, closingHour, slotDuration } = req.body || {};
     if (!name) return res.status(400).json({ error: 'name required' });
-    const futsal = await Futsal.create({ name, photos, contact, location, address, openingHour, closingHour, slotDuration });
+    const owner = req.user ? req.user.id : null;
+    const futsal = await Futsal.create({ name, photos, contact, location, address, owner, openingHour, closingHour, slotDuration });
     res.status(201).json({ futsal });
   }catch(err){
     res.status(500).json({ error: err.message });
@@ -73,6 +74,11 @@ exports.getFutsalAdmin = async (req, res) => {
     const futsal = await Futsal.findById(id);
     if (!futsal) return res.status(404).json({ error: 'Futsal not found' });
 
+    // permission: allow admin OR futsal owner
+    if (!req.user || !(req.user.role === 'admin' || (futsal.owner && futsal.owner.toString() === req.user.id))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const date = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
     const startOfDay = new Date(date);
     startOfDay.setHours(0,0,0,0);
@@ -100,6 +106,37 @@ exports.getFutsalAdmin = async (req, res) => {
     }));
 
     res.json({ futsal, slots: slotsWithDetails });
+  }catch(err){
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.listMyFutsals = async (req, res) => {
+  try{
+    const userId = req.user.id;
+    const dateStr = req.query.date;
+
+    const futsals = await Futsal.find({ owner: userId }).select('name photos contact location address openingHour closingHour slotDuration');
+
+    if (!dateStr) return res.json({ futsals });
+
+    // if date requested, include slots for each futsal for that date
+    const date = new Date(dateStr + 'T00:00:00');
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    const futsalsWithSlots = await Promise.all(futsals.map(async (f) => {
+      const slots = await Slot.find({ futsal: f._id, start: { $gte: startOfDay, $lt: endOfDay } })
+        .sort('start')
+        .populate('reservedBy', 'fullname phone email')
+        .populate('pendingBy', 'fullname phone email');
+
+      return { futsal: f, slots };
+    }));
+
+    res.json({ futsals: futsalsWithSlots });
   }catch(err){
     res.status(500).json({ error: err.message });
   }

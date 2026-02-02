@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { register, verifyEmail, login, setupAdmin, listUsers } = require('../controllers');
+const slotCtrl = require('../controllers/slot');
 const { authMiddleware, adminMiddleware } = require('../middlewares');
+
+// user: get my bookings
+router.get('/my-bookings', authMiddleware, slotCtrl.getUserBookings);
 
 router.post('/register', register);
 router.post('/verify-email', verifyEmail);

@@ -6,6 +6,7 @@ const FutsalSchema = new mongoose.Schema({
   contact: { type: String },
   location: { type: String },
   address: { type: String },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   openingHour: { type: Number, default: 7 }, // hour in 24h (7 = 7:00)
   closingHour: { type: Number, default: 22 }, // hour in 24h
   slotDuration: { type: Number, default: 60 } // minutes
