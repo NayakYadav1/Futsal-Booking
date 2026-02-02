@@ -1,0 +1,3 @@
+# POST /api/futsals/:id/slots/:slotId/confirm (user confirms reserved slot)
+# curl -X POST -H "Authorization: Bearer <USER_TOKEN>" "http://localhost:3000/api/futsals/<FUTSAL_ID>/slots/<SLOT_ID>/confirm"
+{}

@@ -1,0 +1,4 @@
+# POST /api/futsals/:id/generate?date=YYYY-MM-DD
+# Admin-only
+# curl -X POST -H "Authorization: Bearer <ADMIN_TOKEN>" "http://localhost:3000/api/futsals/<FUTSAL_ID>/generate?date=2026-02-03"
+{}

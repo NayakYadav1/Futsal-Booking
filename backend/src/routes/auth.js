@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, verifyEmail, login, setupAdmin } = require('../controllers');
+const { register, verifyEmail, login, setupAdmin, listUsers } = require('../controllers');
 const { authMiddleware, adminMiddleware } = require('../middlewares');
 
 router.post('/register', register);
@@ -13,5 +13,8 @@ router.post('/admin/setup', setupAdmin);
 // example protected routes
 router.get('/me', authMiddleware, (req, res) => res.json({ id: req.user.id, role: req.user.role }));
 router.get('/admin/secret', authMiddleware, adminMiddleware, (req, res) => res.json({ secret: 'admin only' }));
+
+// admin: list all users
+router.get('/users', authMiddleware, adminMiddleware, listUsers);
 
 module.exports = router;

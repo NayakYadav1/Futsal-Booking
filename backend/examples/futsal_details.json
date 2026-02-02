@@ -1,0 +1,4 @@
+# GET /api/futsals/:id?date=YYYY-MM-DD
+# Example:
+# curl -H "Authorization: Bearer <token>" "http://localhost:3000/api/futsals/<FUTSAL_ID>?date=2026-02-02"
+{}

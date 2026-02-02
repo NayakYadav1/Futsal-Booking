@@ -72,4 +72,14 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, verifyEmail, login };
+async function listUsers(req, res){
+  try{
+    const users = await User.find().select('fullname email phone role isVerified createdAt');
+    res.json({ users });
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { register, verifyEmail, login, listUsers };
